@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Max Bridge Docs</title>
+  <meta name="description" content="Documentation for Max Bridge — a small HTTP bridge between a Max bot webhook and OpenClaw.">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="/">😴 SleepyClaw</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="#overview">Overview</a>
+        <a href="#deploy">Deploy</a>
+        <a href="#api">API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap docs">
+    <section class="section narrow" id="overview">
+      <p class="eyebrow">Project Docs</p>
+      <h1>Max Bridge</h1>
+      <p class="lead">
+        Max Bridge is a tiny HTTP bridge between a Max bot webhook and OpenClaw.
+        It accepts incoming webhook requests, forwards them to OpenClaw, and returns the assistant reply directly.
+      </p>
+      <div class="callout">
+        <strong>Design goal:</strong> keep it boring in the best way — one Node service, minimal moving parts, easy deployment.
+      </div>
+    </section>
+
+    <section class="section narrow">
+      <h2>Environment</h2>
+      <pre><code>BRIDGE_PORT=7734
+BRIDGE_TOKEN=replace-me
+OPENCLAW_TARGET=replace-with-your-target
+
+# Optional
+OPENCLAW_BIN=openclaw
+REQUEST_TIMEOUT=120000
+OWNER_NAME=
+</code></pre>
+    </section>
+
+    <section class="section narrow" id="deploy">
+      <h2>Local run</h2>
+      <pre><code>npm install
+cp .env.example .env
+npm start
+</code></pre>
+
+      <h2>systemd</h2>
+      <p>Install the included <code>max-bridge.service</code> unit and point it at the repo checkout.</p>
+    </section>
+
+    <section class="section narrow" id="api">
+      <h2>API</h2>
+      <h3><code>POST /webhook/incoming</code></h3>
+      <p>Send webhook requests with a bearer token and JSON body:</p>
+      <pre><code>{
+  "message_id": "msg_123",
+  "sender_id": "user_456",
+  "sender_name": "User Name",
+  "sender_username": "username",
+  "chat_id": "chat_789",
+  "text": "Hello!",
+  "reply_to": null
+}</code></pre>
+      <p>Possible responses:</p>
+      <ul class="bullets">
+        <li><code>200 OK</code> with a direct reply</li>
+        <li><code>204 No Content</code> when OpenClaw returns no reply</li>
+        <li><code>401 Unauthorized</code></li>
+        <li><code>429 Too Many Requests</code></li>
+        <li><code>502 Bad Gateway</code></li>
+      </ul>
+
+      <h3><code>GET /health</code></h3>
+      <p>Returns service health info.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <p><a href="/">← Back to sleepyjoe.ru</a></p>
+      <p>Max Bridge docs</p>
+    </div>
+  </footer>
+</body>
+</html>
