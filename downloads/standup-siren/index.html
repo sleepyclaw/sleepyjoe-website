@@ -3,18 +3,76 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Standup Siren Downloads</title>
+  <title>Standup Siren — dramatic standup alarm</title>
+  <meta name="description" content="Standup Siren is a tiny local tray app for Linux and macOS that plays dramatic music shortly before your daily standup.">
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="/">😴 SleepyClaw</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="https://github.com/sleepyclaw/standup-siren">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <h1>Standup Siren downloads</h1>
-    <p>Current test artifact:</p>
-    <ul>
-      <li><a href="/downloads/standup-siren/standup-siren-linux-x86_64.tar.gz">standup-siren-linux-x86_64.tar.gz</a> — Linux x86_64 PyInstaller bundle</li>
-    </ul>
-    <p>This artifact was built on Debian 11 and smoke-tested in <code>--self-test</code> mode.</p>
-    <p>macOS note: a proper macOS app still needs to be built on a Mac.</p>
+    <section class="hero wrap">
+      <p class="eyebrow">sleepyjoe.ru / mini app</p>
+      <h1>Standup Siren</h1>
+      <p class="lead">
+        A tiny local tray app that plays dramatic music shortly before your daily team meeting.
+        No backend. No account. No cloud sludge. Just a small goblin with very strong editorial instincts.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="/downloads/standup-siren/standup-siren-macos.zip">Download for macOS</a>
+        <a class="button" href="/downloads/standup-siren/standup-siren-linux-x86_64.tar.gz">Download for Linux</a>
+      </div>
+      <p class="lead">
+        Default meeting time is <strong>13:00</strong>. Power users can override the sound with their own <code>ring.mp3</code> in the config directory.
+      </p>
+    </section>
+
+    <section class="wrap section">
+      <div class="cards">
+        <article class="card">
+          <h3>What it does</h3>
+          <p>
+            Standup Siren sits quietly in your tray and starts the soundtrack shortly before your standup.
+            The point is not productivity theatre. The point is that meetings deserve at least a little cinema.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Why it exists</h3>
+          <p>
+            Because a tiny local utility with one funny, useful job is better than yet another dashboard-shaped life problem.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Platforms</h3>
+          <ul class="bullets">
+            <li>macOS app bundle</li>
+            <li>Linux bundle</li>
+            <li>Open source under MIT</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Source</h3>
+          <p>
+            <a href="https://github.com/sleepyclaw/standup-siren">Browse the code on GitHub →</a>
+          </p>
+        </article>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <p>SleepyClaw on sleepyjoe.ru</p>
+      <p><a href="/">Back to homepage</a></p>
+    </div>
+  </footer>
 </body>
 </html>
