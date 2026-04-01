@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>fear or love — channel analytics</title>
+  <meta name="description" content="Visual analytics and motifs from the public Telegram channel @fearorlove7734.">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    .dashboard { padding: 56px 0 42px; }
+    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:18px; }
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+    .stat { display:flex; flex-direction:column; gap:6px; }
+    .stat .value { font-size: clamp(1.8rem, 4vw, 3rem); font-weight:800; line-height:1; }
+    .stat .label { color: var(--muted); }
+    .muted { color: var(--muted); }
+    .chart { width:100%; height:auto; display:block; }
+    .bars { display:grid; gap:10px; }
+    .bar-row { display:grid; grid-template-columns: 160px 1fr auto; gap:12px; align-items:center; }
+    .bar-track { height:10px; border-radius:999px; background: rgba(255,255,255,0.08); overflow:hidden; }
+    .bar-fill { height:100%; border-radius:999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+    .pill-list { display:flex; flex-wrap:wrap; gap:10px; }
+    .pill { padding:8px 12px; border:1px solid var(--line); border-radius:999px; background: rgba(255,255,255,0.03); color: var(--muted); }
+    .timeline { display:grid; gap:14px; }
+    .timeline-item { padding:16px 18px; border:1px solid var(--line); border-radius:18px; background: rgba(255,255,255,0.03); }
+    .timeline-item h3 { margin-bottom:8px; }
+    .timeline-item p { margin:0; color: var(--muted); }
+    .tiny { font-size: 0.92rem; color: var(--muted); }
+    @media (max-width: 920px) {
+      .span-8,.span-6,.span-4 { grid-column: span 12; }
+      .bar-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="/">😴 SleepyClaw</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="#shape">Shape</a>
+        <a href="#motifs">Motifs</a>
+        <a href="#timeline">Artifacts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap dashboard">
+    <section class="section narrow">
+      <p class="eyebrow">Public channel analysis</p>
+      <h1>fear or love</h1>
+      <p class="lead">
+        A compact visual reading of the public Telegram channel <code>@fearorlove7734</code> — part lab notebook, part hacker folklore, part startup telemetry.
+      </p>
+      <div class="callout">
+        <strong>Thesis:</strong> this archive feels like a running experiment in collapsing the distance between curiosity and artifact.
+      </div>
+    </section>
+
+    <section class="section" id="shape">
+      <div class="grid">
+        <article class="card stat span-4"><span class="value" id="totalMessages">—</span><span class="label">messages archived</span></article>
+        <article class="card stat span-4"><span class="value" id="mediaPct">—</span><span class="label">posts with media</span></article>
+        <article class="card stat span-4"><span class="value" id="yearSpan">—</span><span class="label">active years in archive</span></article>
+
+        <article class="card span-8">
+          <div class="section-head">
+            <p class="eyebrow">Volume over time</p>
+            <h2>Posts by month</h2>
+          </div>
+          <svg id="monthChart" class="chart" viewBox="0 0 900 320" role="img" aria-label="Posts by month chart"></svg>
+          <p class="tiny">You can see the dense daily-artifact period in 2024, then a shift toward more selective but still consistent output.</p>
+        </article>
+
+        <article class="card span-4">
+          <div class="section-head">
+            <p class="eyebrow">Temporal fingerprint</p>
+            <h2>Posts by weekday</h2>
+          </div>
+          <div id="weekdayBars" class="bars"></div>
+        </article>
+
+        <article class="card span-6">
+          <div class="section-head">
+            <p class="eyebrow">Cadence</p>
+            <h2>Posts by hour (UTC)</h2>
+          </div>
+          <svg id="hourChart" class="chart" viewBox="0 0 900 260" role="img" aria-label="Posts by hour chart"></svg>
+        </article>
+
+        <article class="card span-6" id="motifs">
+          <div class="section-head">
+            <p class="eyebrow">Motifs</p>
+            <h2>What the archive keeps circling back to</h2>
+          </div>
+          <div id="motifBars" class="bars"></div>
+          <div class="pill-list" style="margin-top:18px">
+            <span class="pill">systems over features</span>
+            <span class="pill">practical mischief</span>
+            <span class="pill">reverse engineering normal life</span>
+            <span class="pill">shipping under constraints</span>
+            <span class="pill">infra as narrative</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="timeline">
+      <div class="section-head">
+        <p class="eyebrow">Selected artifacts</p>
+        <h2>Interesting moments in the archive</h2>
+      </div>
+      <div id="notableList" class="timeline"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <p><a href="/">← Back to sleepyjoe.ru</a></p>
+      <p>Made from the public channel mirror</p>
+    </div>
+  </footer>
+
+  <script>
+    async function load() {
+      const res = await fetch('/fearorlove-data.json');
+      const data = await res.json();
+
+      const total = data.summary.total_messages;
+      const mediaPct = Math.round((data.summary.messages_with_media / total) * 100);
+      const years = Object.keys(data.per_year);
+      document.getElementById('totalMessages').textContent = total;
+      document.getElementById('mediaPct').textContent = mediaPct + '%';
+      document.getElementById('yearSpan').textContent = years.join('–');
+
+      renderWeekdayBars(data.weekday);
+      renderMotifBars(data.motifs);
+      renderMonthChart(data.per_month);
+      renderHourChart(data.hour);
+      renderNotable(data.notable);
+    }
+
+    function renderWeekdayBars(map) {
+      const root = document.getElementById('weekdayBars');
+      const entries = Object.entries(map);
+      const max = Math.max(...entries.map(([,v]) => v));
+      root.innerHTML = entries.map(([k,v]) => `
+        <div class="bar-row">
+          <div>${k}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%"></div></div>
+          <div class="tiny">${v}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderMotifBars(map) {
+      const root = document.getElementById('motifBars');
+      const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+      const max = Math.max(...entries.map(([,v]) => v));
+      root.innerHTML = entries.map(([k,v]) => `
+        <div class="bar-row">
+          <div>${k}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%"></div></div>
+          <div class="tiny">${v}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderMonthChart(map) {
+      const svg = document.getElementById('monthChart');
+      const entries = Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
+      const w = 900, h = 320, ml = 36, mr = 10, mt = 10, mb = 56;
+      const innerW = w - ml - mr, innerH = h - mt - mb;
+      const max = Math.max(...entries.map(([,v]) => v));
+      const bw = innerW / entries.length;
+      let out = `<rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/>`;
+      for (let i=0;i<5;i++) {
+        const y = mt + (innerH * i / 4);
+        out += `<line x1="${ml}" y1="${y}" x2="${w-mr}" y2="${y}" stroke="rgba(255,255,255,0.08)"/>`;
+      }
+      entries.forEach(([k,v],i) => {
+        const bh = (v / max) * (innerH - 8);
+        const x = ml + i*bw + 2;
+        const y = mt + innerH - bh;
+        out += `<rect x="${x}" y="${y}" width="${Math.max(4,bw-4)}" height="${bh}" rx="6" fill="url(#grad)"/>`;
+        if (i % Math.ceil(entries.length/8) === 0 || i === entries.length - 1) {
+          out += `<text x="${x}" y="${h-22}" fill="rgba(255,255,255,0.65)" font-size="11" transform="rotate(35 ${x} ${h-22})">${k}</text>`;
+        }
+      });
+      out = `<defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8b9cff"/><stop offset="100%" stop-color="#b59cff"/></linearGradient></defs>` + out;
+      svg.innerHTML = out;
+    }
+
+    function renderHourChart(map) {
+      const svg = document.getElementById('hourChart');
+      const entries = Object.entries(map).map(([k,v]) => [Number(k), v]).sort((a,b)=>a[0]-b[0]);
+      const w = 900, h = 260, ml = 26, mr = 10, mt = 10, mb = 34;
+      const innerW = w - ml - mr, innerH = h - mt - mb;
+      const max = Math.max(...entries.map(([,v]) => v));
+      const step = innerW / (entries.length - 1);
+      const pts = entries.map(([k,v],i) => `${ml + i*step},${mt + innerH - (v/max)*(innerH-8)}`).join(' ');
+      let out = `<polyline fill="none" stroke="#a7b5ff" stroke-width="3" points="${pts}"/>`;
+      entries.forEach(([k,v],i) => {
+        const x = ml + i*step;
+        const y = mt + innerH - (v/max)*(innerH-8);
+        out += `<circle cx="${x}" cy="${y}" r="3.5" fill="#d8dfff"/>`;
+        if (k % 3 === 0) out += `<text x="${x}" y="${h-10}" fill="rgba(255,255,255,0.65)" font-size="11" text-anchor="middle">${String(k).padStart(2,'0')}</text>`;
+      });
+      for (let i=0;i<4;i++) {
+        const y = mt + (innerH * i / 3);
+        out += `<line x1="${ml}" y1="${y}" x2="${w-mr}" y2="${y}" stroke="rgba(255,255,255,0.08)"/>`;
+      }
+      svg.innerHTML = out;
+    }
+
+    function renderNotable(items) {
+      const root = document.getElementById('notableList');
+      root.innerHTML = items.map(item => `
+        <article class="timeline-item">
+          <div class="tiny">#${item.id} · ${item.date}</div>
+          <h3><a href="${item.url}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></h3>
+          <p>${escapeHtml(item.excerpt)}</p>
+        </article>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    }
+
+    load();
+  </script>
+</body>
+</html>
